@@ -1,0 +1,15 @@
+# środowisko wirtualne
+.venv/
+
+# pliki tymczasowe Pythona
+__pycache__/
+*.pyc
+
+# lokalna konfiguracja
+.env
+
+# dane i modele nie trafiają do repo
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
