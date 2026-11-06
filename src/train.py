@@ -1,77 +1,54 @@
-import os
-from pathlib import Path
+"""
+Zadanie 2 – trening modelu.
 
-import pandas as pd
-from dotenv import load_dotenv
-from sklearn.datasets import load_iris
+Wczytuje dane funkcjami z data_prep.py, buduje Pipeline (StandardScaler + klasyfikator),
+trenuje go na zbiorze treningowym i zapisuje do models/ w formacie .joblib.
+Uruchomienie: python src/train.py
+"""
+import time
+
+import joblib
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
-
-DATA_PATH = PROJECT_ROOT / os.getenv("DATA_PATH", "data/iris.csv")
-TEST_SIZE = float(os.getenv("TEST_SIZE", 0.2))
-RANDOM_SEED = int(os.getenv("RANDOM_SEED", 42))
-RESULTS_PATH = PROJECT_ROOT / os.getenv("RESULTS_PATH", "wyniki.txt")
+import config
+from data_prep import download_data, load_data, split_data
 
 
-# --- Zadanie 3: wczytanie danych ---
-def load_data(path: Path) -> pd.DataFrame:
-    """Jeśli CSV nie istnieje, tworzy go z load_iris(); następnie wczytuje go do DataFrame."""
-    if not path.exists():
-        iris = load_iris(as_frame=True)
-        df = iris.frame                                   # cechy + kolumna 'target'
-        df["species"] = df["target"].map(dict(enumerate(iris.target_names)))
-        path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(path, index=False)
-        print(f"Zapisano zbiór danych do {path}")
-    return pd.read_csv(path)
-
-
-def explore(df: pd.DataFrame) -> None:
-    """Podstawowa eksploracja zbioru."""
-    print("=== Pierwsze wiersze ===")
-    print(df.head())
-    print("\n=== Rozmiar zbioru (wiersze, kolumny) ===")
-    print(df.shape)
-    print("\n=== Statystyki opisowe ===")
-    print(df.describe())
+def build_model() -> Pipeline:
+    """Tworzy Pipeline: standaryzacja cech + klasyfikator wybrany w .env (MODEL_TYPE)."""
+    if config.MODEL_TYPE == "logistic_regression":
+        clf = LogisticRegression(max_iter=config.MAX_ITER, C=config.C, random_state=config.RANDOM_SEED)
+    elif config.MODEL_TYPE == "random_forest":
+        clf = RandomForestClassifier(n_estimators=config.N_ESTIMATORS, random_state=config.RANDOM_SEED)
+    else:
+        raise ValueError(f"Nieznany MODEL_TYPE: {config.MODEL_TYPE}")
+    return Pipeline([("scaler", StandardScaler()), ("clf", clf)])
 
 
 def main() -> None:
-    df = load_data(DATA_PATH)
-    explore(df)
+    # Jeśli danych jeszcze nie ma (np. świeży klon repo w CI), pobieramy je
+    if not config.DATA_PATH.exists():
+        download_data(config.DATA_PATH)
 
-    # --- Zadanie 4: podział danych i trening ---
-    X = df.drop(columns=["target", "species"])            # cechy
-    y = df["species"]                                     # etykiety
+    df = load_data(config.DATA_PATH)
+    X_train, X_test, y_train, y_test = split_data(df, config.TEST_SIZE, config.RANDOM_SEED)
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y,
-        test_size=TEST_SIZE,
-        random_state=RANDOM_SEED,
-        stratify=y,          # zachowuje proporcje klas w obu zbiorach
-    )
-
-    model = LogisticRegression(max_iter=1000, random_state=RANDOM_SEED)
+    model = build_model()
+    start = time.perf_counter()
     model.fit(X_train, y_train)
+    elapsed = time.perf_counter() - start
 
-    # --- Zadanie 5: ocena modelu ---
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred)
+    config.MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, config.MODEL_PATH)
 
-    summary = (
-        f"Model: LogisticRegression\n"
-        f"Zbiór treningowy: {len(X_train)} próbek, testowy: {len(X_test)} próbek\n"
-        f"Accuracy: {acc:.4f}\n\n"
-        f"Classification report:\n{report}"
-    )
-    print("\n" + summary)
-    RESULTS_PATH.write_text(summary, encoding="utf-8")
-    print(f"Wyniki zapisano do {RESULTS_PATH}")
+    print(f"Model: {config.MODEL_TYPE}")
+    print(f"Zbiór treningowy: {len(X_train)} próbek")
+    print(f"Czas trenowania: {elapsed * 1000:.1f} ms")
+    print(f"Accuracy na zbiorze treningowym: {model.score(X_train, y_train):.4f}")
+    print(f"Zapisano model do {config.MODEL_PATH}")
 
 
 if __name__ == "__main__":
