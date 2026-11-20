@@ -1,0 +1,15 @@
+# Zadanie 5: usługa zbudowana z Dockerfile z zadania 1
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: moja-aplikacja:compose
+    container_name: moja-aplikacja-compose
+    environment:
+      - GREETING=Witaj z Docker Compose
+      - PORT=8000            # aplikacja działa jako serwer, więc kontener nie kończy się od razu
+    ports:
+      - "8000:8000"          # port_hosta:port_kontenera
+    volumes:
+      - ./dane:/data         # wynik.txt pojawi się w katalogu dane/ na hoście

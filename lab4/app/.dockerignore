@@ -1,0 +1,11 @@
+# Zadanie 5: pliki niepotrzebne w obrazie
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+.idea/
+dane/
+docker-compose.yml
+Dockerfile
+.dockerignore
