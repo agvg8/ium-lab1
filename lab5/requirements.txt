@@ -1,0 +1,7 @@
+# Zależności pipeline'u (moduły z src/ i testy) – instalowane w obrazie Dockera
+scikit-learn==1.5.2
+pandas==2.2.3
+numpy==2.1.3
+joblib==1.4.2
+python-dotenv==1.0.1
+pytest==8.3.4

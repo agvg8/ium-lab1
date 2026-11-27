@@ -1,0 +1,26 @@
+# Zadanie 5: pliki niepotrzebne w obrazie treningowym
+# lokalne środowisko wirtualne
+.venv/
+venv/
+# dane, modele i wyniki – trafiają do kontenera przez wolumeny
+data/
+models/
+results/
+# pliki tymczasowe i narzędzia
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.idea/
+# notatniki i inne laboratoria – niepotrzebne do treningu
+notebooks/
+lab4/
+visualize/
+*.ipynb
+# lokalna konfiguracja (do kontenera trafia przez env_file)
+.env
+.env.train
+# pliki Dockera
+Dockerfile
+docker-compose.yml
+.dockerignore

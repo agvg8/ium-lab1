@@ -1,0 +1,26 @@
+INSERT INTO SerwisRowerowy (id_serwisu, Cennik, NazwaSerwisu, DostepnoscCzesciZm, DostepneUslugiSerwisowe) VALUES
+(1, 149.00, N'BikeFix Bydgoszcz',    1, N'przegląd, centrowanie kół, serwis amortyzatorów'),
+(2, 129.00, N'Kręć Serwis Toruń',    0, N'przegląd, wymiana łańcucha, regulacja hamulców'),
+(3, 179.00, N'Pro Cycle Gdańsk',     1, N'przegląd, serwis e-bike, bike fitting');
+
+INSERT INTO Pracownik (id_pracownika, Imie, Nazwisko, Stanowisko, Wynagrodzenie, id_placowki, id_przelozonego, id_podlegajacego) VALUES
+(1, N'Piotr', N'Dąbrowski', N'Kierownik Salonu', 9200.00, 1, NULL, NULL);
+INSERT INTO Pracownik (id_pracownika, Imie, Nazwisko, Stanowisko, Wynagrodzenie, id_placowki, id_przelozonego, id_podlegajacego) VALUES
+(2, N'Anna', N'Nowak',    N'Sprzedawca',              5600.00, 1, 1, NULL),
+(4, N'Marta', N'Wójcik', N'Specjalista ds. Serwisu', 6400.00, 1, 1, NULL);
+UPDATE Pracownik SET id_podlegajacego = 4 WHERE id_pracownika = 1;
+
+INSERT INTO Rower (id_roweru, Cena, Kolor, RozmiarRamy, TypHamulcow, TypNapedu, MaterialRamy, Model, Marka, id_placowki) VALUES
+(6,  15999.00, N'czarny', 20, N'tarczowe hydrauliczne', '1x12', N'karbon',    N'Jeffsy CF', N'YT',   3),
+(21, 14999.00, N'czarny', 19, N'tarczowe hydrauliczne', '1x12', N'aluminium', N'Rail 5',    N'Trek', 1);
+INSERT INTO RowerGorski (id_roweru, RodzajZawieszenia, ProducentZawieszenia, SkokZawieszenia, KategoriaUzytkowania, RozmiarKola) VALUES
+(6, N'pełna', N'Fox', 150, 'Enduro', 29);
+INSERT INTO RowerElektryczny (id_roweru, PojemnoscBaterii, MaksymalnyMomentObrotowy, ProducentSilnika, UmiejscowienieAkumulatora) VALUES
+(21, 625, 85, N'Bosch', 'zintegrowany');
+
+INSERT INTO Klient (id_klienta, DataZakupu, ZakupionaIlosc, Imie, Nazwisko, NrTelefonu, id_roweru, id_adresu) VALUES
+(1, '2025-04-12', 1, N'Adam', N'Malinowski', '+48501100201', 2, 1);
+INSERT INTO KlientEmail (id_klienta, Email) VALUES
+(1, 'adam.malinowski@gmail.com'), (1, 'a.malinowski@firma.pl');
+INSERT INTO OpiniaKlienta (id_opinii, Ocena, DataWystawienia, TrescOpinii, id_klienta) VALUES
+(1, 5, '2025-04-20', N'Świetny rower, obsługa bardzo pomocna.', 1);

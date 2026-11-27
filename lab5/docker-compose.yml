@@ -1,0 +1,35 @@
+# Lab 5 – pipeline ML w Docker Compose: trening + serwer z wynikami
+services:
+
+  # Zadania 2–4: usługa treningowa (obraz z Dockerfile z zadania 1)
+  train:
+    build: .
+    image: ium-train:1.0
+    container_name: ium-train
+    env_file: .env.train               # osobna konfiguracja tej usługi
+    # Pełny pipeline z lab. 3 + serwer statusu (zamiast domyślnego CMD z Dockerfile)
+    command: ["python", "src/run_pipeline.py"]
+    volumes:
+      - ./data:/app/data               # dane (wine.csv) zostają na hoście
+      - ./models:/app/models           # wytrenowany model zostaje na hoście
+      - ./results:/app/results         # wyniki.txt dla usługi visualize
+    # Zadanie 4: limity zasobów
+    mem_limit: 512m
+    cpus: 1.0
+    # Brak sekcji ports – port 5000 jest dostępny tylko w sieci compose (http://train:5000)
+
+  # Zadania 4 i 6: serwer HTTP wystawiający katalog z wynikami
+  visualize:
+    build: ./visualize
+    image: ium-visualize:1.0
+    container_name: ium-visualize
+    environment:
+      - TRAIN_URL=http://train:5000/status   # adres usługi train po jej nazwie
+      - PORT=8080
+    volumes:
+      - ./results:/srv/results:ro      # wyniki tylko do odczytu
+      - ./models:/srv/models:ro
+    ports:
+      - "8080:8080"                    # dostęp z przeglądarki na hoście
+    depends_on:
+      - train                          # start po uruchomieniu kontenera train
